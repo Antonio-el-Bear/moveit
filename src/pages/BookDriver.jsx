@@ -79,6 +79,7 @@ export default function BookDriver() {
     needs_helpers: false,
     offer_price: '',
     notes: '',
+    payment_method: 'card',
   });
 
   const settings = loadSettings();
@@ -131,8 +132,8 @@ export default function BookDriver() {
       estimated_cost: Number(form.offer_price) || estimatedCost,
       amount_due: amountDue,
       discount_percent: settings.discountPercent,
-      payment_method: 'PayFast',
-      payment_status: 'pending',
+      payment_method: form.payment_method,
+      payment_status: form.payment_method === 'cash' ? 'pending_payment' : 'pending',
       status: 'pending',
       needs_helpers: form.needs_helpers,
       notes: form.notes,
@@ -142,25 +143,30 @@ export default function BookDriver() {
 
     saveBooking(booking);
 
-    const payload = buildPayFastPayload(settings.payfast, booking);
-    const payFastForm = document.createElement('form');
-    payFastForm.method = 'POST';
-    payFastForm.action = getPayFastProcessUrl(settings.payfast.environment);
-    payFastForm.target = '_blank';
+    if (form.payment_method === 'card') {
+      const payload = buildPayFastPayload(settings.payfast, booking);
+      const payFastForm = document.createElement('form');
+      payFastForm.method = 'POST';
+      payFastForm.action = getPayFastProcessUrl(settings.payfast.environment);
+      payFastForm.target = '_blank';
 
-    Object.entries(payload).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      payFastForm.appendChild(input);
-    });
+      Object.entries(payload).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        payFastForm.appendChild(input);
+      });
 
-    document.body.appendChild(payFastForm);
-    payFastForm.submit();
-    document.body.removeChild(payFastForm);
+      document.body.appendChild(payFastForm);
+      payFastForm.submit();
+      document.body.removeChild(payFastForm);
 
-    window.alert('Your booking is saved and a PayFast payment window has been opened.');
+      window.alert('Your booking is saved and a PayFast payment window has been opened.');
+    } else {
+      window.alert('Booking confirmed! Contact the driver to arrange cash payment at pickup.');
+    }
+
     navigate('/my-bookings');
   };
 
@@ -365,13 +371,61 @@ export default function BookDriver() {
           <p className="mt-2 text-xs text-muted-foreground">If you enter a fixed price, the driver will see your offer alongside the normal estimate.</p>
         </div>
 
-        <div className="rounded-3xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
-          <p className="font-semibold text-foreground">PayFast checkout</p>
-          <p className="mt-2">You will be redirected to PayFast to complete payment for R{amountDue}. Use sandbox mode for testing or update the admin PayFast settings before checkout.</p>
+        <div className="space-y-4">
+          <h3 className="font-display text-lg font-semibold text-foreground">Payment method</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="relative flex cursor-pointer items-center gap-3 rounded-3xl border-2 p-4 transition" style={{ borderColor: form.payment_method === 'card' ? 'var(--color-primary)' : 'var(--color-border)' }}>
+              <input
+                type="radio"
+                name="payment_method"
+                value="card"
+                checked={form.payment_method === 'card'}
+                onChange={(e) => setForm((prev) => ({ ...prev, payment_method: e.target.value }))}
+                className="h-4 w-4"
+              />
+              <div>
+                <p className="font-medium text-foreground">Card (PayFast)</p>
+                <p className="text-xs text-muted-foreground">Pay online now</p>
+              </div>
+            </label>
+            <label className="relative flex cursor-pointer items-center gap-3 rounded-3xl border-2 p-4 transition" style={{ borderColor: form.payment_method === 'cash' ? 'var(--color-primary)' : 'var(--color-border)' }}>
+              <input
+                type="radio"
+                name="payment_method"
+                value="cash"
+                checked={form.payment_method === 'cash'}
+                onChange={(e) => setForm((prev) => ({ ...prev, payment_method: e.target.value }))}
+                className="h-4 w-4"
+              />
+              <div>
+                <p className="font-medium text-foreground">Cash</p>
+                <p className="text-xs text-muted-foreground">Pay at pickup</p>
+              </div>
+            </label>
+          </div>
         </div>
-        <button type="submit" className="w-full rounded-3xl bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
-          Pay with PayFast
-        </button>
+
+        {form.payment_method === 'card' ? (
+          <>
+            <div className="rounded-3xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">PayFast checkout</p>
+              <p className="mt-2">You will be redirected to PayFast to complete payment for R{amountDue}. Use sandbox mode for testing or update the admin PayFast settings before checkout.</p>
+            </div>
+            <button type="submit" className="w-full rounded-3xl bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
+              Pay with PayFast
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="rounded-3xl border border-border bg-blue-50 p-4 text-sm">
+              <p className="font-semibold text-foreground">Cash payment</p>
+              <p className="mt-2 text-muted-foreground">You'll pay <span className="font-semibold text-foreground">R{amountDue}</span> directly to the driver at pickup. The driver will contact you to confirm the booking.</p>
+            </div>
+            <button type="submit" className="w-full rounded-3xl bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
+              Confirm Booking
+            </button>
+          </>
+        )}
       </form>
     </div>
   );

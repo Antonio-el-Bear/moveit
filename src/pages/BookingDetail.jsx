@@ -105,6 +105,19 @@ export default function BookingDetail() {
             <div className="mt-2 text-xs text-muted-foreground">{booking.fixed_price ? 'Fixed offer submitted' : 'Standard estimate'}</div>
           </div>
 
+          <div className="rounded-3xl border border-border p-4 bg-card">
+            <p className="text-sm text-muted-foreground mb-3">Payment method</p>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground capitalize">{booking.payment_method === 'cash' ? 'Cash at pickup' : 'Card (PayFast)'}</span>
+              <span className={`text-xs font-medium px-3 py-1 rounded-full ${booking.payment_status === 'pending_payment' ? 'bg-orange-100 text-orange-800' : booking.payment_status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                {booking.payment_status === 'pending_payment' ? 'Awaiting payment' : booking.payment_status === 'completed' ? 'Paid' : 'Processing'}
+              </span>
+            </div>
+            {booking.payment_method === 'cash' && booking.payment_status === 'pending_payment' && (
+              <p className="mt-3 text-xs text-muted-foreground">You'll pay R{booking.amount_due} directly to the driver at pickup.</p>
+            )}
+          </div>
+
           {booking.status === 'pending' && (
             <button
               onClick={() => handleStatusUpdate('cancelled')}
