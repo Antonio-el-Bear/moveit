@@ -2,8 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Star, MapPin, Truck, Users, Calendar, Clock, Package, MessageSquare } from 'lucide-react';
 import VehicleBadge from '@/components/moveit/VehicleBadge';
+import DistanceMap from '@/components/moveit/DistanceMap';
 import { loadSettings, saveBooking, applyDiscount } from '@/lib/appStorage';
 import { getPayFastProcessUrl, buildPayFastPayload } from '@/lib/payfast';
+import { calculateDistance, addressToCoords } from '@/lib/distance';
 
 const driverSeed = [
   {
