@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import { loadSettings } from '@/lib/appStorage';
+import { loadSettings, resetAdminPassphrase } from '@/lib/appStorage';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
   const settings = loadSettings();
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,7 +17,15 @@ export default function AdminLogin() {
       navigate('/admin');
     } else {
       setError('Invalid passphrase');
+      setInfo('');
     }
+  };
+
+  const handleReset = () => {
+    resetAdminPassphrase();
+    setInfo('Admin passphrase has been reset to the default value. Use admin123 to sign in.');
+    setError('');
+    setPass('');
   };
 
   return (
@@ -42,9 +51,11 @@ export default function AdminLogin() {
           />
         </label>
         {error && <div className="text-sm text-red-600">{error}</div>}
-        <div className="flex gap-3">
-          <button type="submit" className="flex-1 rounded-3xl bg-primary py-3 text-sm font-semibold text-primary-foreground">Sign in</button>
-          <button type="button" onClick={() => navigate('/')} className="flex-1 rounded-3xl border border-border py-3 text-sm font-semibold">Cancel</button>
+        {info && <div className="text-sm text-emerald-600">{info}</div>}
+        <div className="flex flex-col gap-3">
+          <button type="submit" className="rounded-3xl bg-primary py-3 text-sm font-semibold text-primary-foreground">Sign in</button>
+          <button type="button" onClick={() => navigate('/')} className="rounded-3xl border border-border py-3 text-sm font-semibold">Cancel</button>
+          <button type="button" onClick={handleReset} className="rounded-3xl border border-border bg-muted/50 py-3 text-sm font-semibold text-foreground">Reset passphrase to default</button>
         </div>
       </form>
     </div>

@@ -28,6 +28,11 @@ export function saveSettings(settings) {
   window.localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
 }
 
+export function resetAdminPassphrase() {
+  const current = loadSettings();
+  saveSettings({ ...current, admin_passphrase: defaultSettings().admin_passphrase });
+}
+
 export function loadBookings() {
   return Object.keys(window.localStorage)
     .filter((key) => key.startsWith('booking-'))
