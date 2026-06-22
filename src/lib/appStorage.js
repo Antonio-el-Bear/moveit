@@ -11,7 +11,7 @@ const defaultSettings = () => ({
     cancel_url: `${window.location.origin}/`,
     notify_url: `${window.location.origin}/api/payfast/notify`,
   },
-  admin_passphrase: 'admin123',
+  admin_passphrase: 'admin',
 });
 
 export function loadSettings() {

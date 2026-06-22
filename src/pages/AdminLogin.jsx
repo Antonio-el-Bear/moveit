@@ -23,7 +23,7 @@ export default function AdminLogin() {
 
   const handleReset = () => {
     resetAdminPassphrase();
-    setInfo('Admin passphrase has been reset to the default value. Use admin123 to sign in.');
+    setInfo('Admin passphrase has been reset to the default value. Use admin to sign in.');
     setError('');
     setPass('');
   };
