@@ -21,6 +21,7 @@ const driverSeed = [
     total_moves: 124,
     is_available: true,
     location_area: 'Johannesburg CBD',
+    location: { lat: -26.205, lon: 28.047 },
     bio: 'Fast and careful with every move.',
     has_helpers: true,
   },
@@ -37,6 +38,7 @@ const driverSeed = [
     total_moves: 89,
     is_available: true,
     location_area: 'Sandton',
+    location: { lat: -26.109, lon: 28.055 },
     bio: 'Reliable service with helpful staff.',
     has_helpers: false,
   },
@@ -53,6 +55,7 @@ const driverSeed = [
     total_moves: 76,
     is_available: false,
     location_area: 'Pretoria North',
+    location: { lat: -25.736, lon: 28.243 },
     bio: 'Heavy duty moves handled with care.',
     has_helpers: true,
   },
@@ -93,6 +96,12 @@ export default function BookDriver() {
   const amountDue = useMemo(() => {
     return applyDiscount(Number(form.offer_price) || estimatedCost, settings.discountPercent);
   }, [form.offer_price, estimatedCost, settings.discountPercent]);
+
+  const distance = useMemo(() => {
+    if (!form.pickup_address || !driver?.location) return null;
+    const pickupCoords = addressToCoords(form.pickup_address);
+    return calculateDistance(driver.location.lat, driver.location.lon, pickupCoords.lat, pickupCoords.lon);
+  }, [form.pickup_address, driver]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -194,6 +203,16 @@ export default function BookDriver() {
           </div>
         </div>
       </div>
+
+      {form.pickup_address && (
+        <div className="mb-6">
+          <DistanceMap
+            driverLocation={driver.location}
+            pickupLocation={addressToCoords(form.pickup_address)}
+            distance={distance}
+          />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="rounded-3xl bg-card border border-border p-5 shadow-soft space-y-5">
